@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalp Animasyonu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            /* Kalbi tam ortada ve biraz yukarıda konumlandırıyoruz */
+            transform: translateY(-40px);
+        }
+
+        .word {
+            position: absolute;
+            color: #ff1a40; /* Canlı kırmızı tonu */
+            font-weight: 600;
+            opacity: 0;
+            transform: scale(0.2);
+            /* Yumuşak ve yavaş süzülme efekti */
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            text-shadow: 0 0 5px rgba(255, 26, 64, 0.4);
+            white-space: nowrap;
+            font-size: 12px; /* Okunabilir ve net boyut */
+            /* Kelimelerin tam merkezden düzgün yayılması için */
+            transform-origin: center center;
+        }
+
+        .word.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="heart-container"></div>
+
+    <script>
+        // Farklı dillerde "Seni seviyorum"
+        const languages = [
+            "Seni Seviyorum", "I Love You", "Te amo", "Je t'aime", 
+            "Ich liebe dich", "Ti amo", "Я тебя люблю", "Te quiero", 
+            "Kocham Cię", "Mahal kita", "Minä rakastan sinua", "Jeg elsker dig", 
+            "Σ' αγαπώ", "Volim te", "Szeretlek", "Te dua", "Ik hou van jou", "Milujem ťa",
+            "Saranghae", "Wo ai ni", "Aishiteru", "Te iubesc", "Obicham te", 
+            "Aloha wau ia `oe", "Ngiyakuthanda", "Nakupenda", "Es tevi mīlu", 
+            "Aš tave myliu", "Ma armastan sind", "Eg elski teg", 
+            "Ani ohev otakh", "Ana behibak", "Men seni sevaman", "Seni söýýärin", 
+            "Ez te hezkir dikim", "Mən səni sevirəm"
+        ];
+
+        const container = document.getElementById('heart-container');
+        const wordElements = [];
+
+        // Satır satır (yukarıdan aşağıya Y ekseni boyunca) kusursuz sıralama matrisi
+        // Üst üste binmeyi kesinlikle önleyen kontrollü boşluk aralığı
+        const rows = [];
+        
+        // Y eksenini yukarıdan aşağıya tarıyoruz
+        for (let y = -12; y <= 12; y += 1.6) {
+            let rowWords = [];
+            // Her satır için kalbin sol ve sağ sınırlarını matematiksel olarak buluyoruz
+            for (let x = -15; x <= 15; x += 1.3) {
+                // Kalp formülü: (x^2 + y^2 - 1)^3 - x^2 * y^3 <= 0
+                const eq = Math.pow(x/3.8, 2) + Math.pow(y/3.8, 2) - 1;
+                // Kalp sınırları içindeyse ekle
+                if (Math.pow(eq, 3) - Math.pow(x/3.8, 2) * Math.pow(y/3.8, 3) <= 0.1) {
+                    rowWords.push({ x: x, y: y });
+                }
+            }
+            if (rowWords.length > 0) {
+                rows.push(rowWords);
+            }
+        }
+
+        // Tüm noktaları yukarıdan aşağıya satır satır düzgünce birleştiriyoruz
+        let allPoints = [];
+        rows.forEach(row => {
+            // Soldan sağa sıralama
+            row.sort((a, b) => a.x - b.x);
+            allPoints.push(...row);
+        });
+
+        // Dilleri sırayla ve dengeli dağıtma
+        const assignedLanguages = [];
+        for (let i = 0; i < allPoints.length; i++) {
+            assignedLanguages.push(languages[i % languages.length]);
+        }
+
+        // DOM elementlerini oluşturma
+        allPoints.forEach((p, index) => {
+            const span = document.createElement('span');
+            span.classList.add('word');
+            span.innerText = assignedLanguages[index];
+            
+            // Konumlandırma katsayısı (Fotoğraftakine benzer zarif boyut)
+            const posX = 250 + p.x * 14; 
+            const posY = 250 + p.y * 14;
+            
+            span.style.left = posX + 'px';
+            span.style.top = posY + 'px';
+
+            container.appendChild(span);
+            wordElements.push(span);
+        });
+
+        // Animasyon: İstediğin gibi yavaş, akıcı ve yukarıdan aşağı satır satır belirme
+        let currentIndex = 0;
+
+        function animateHeart() {
+            if (currentIndex < wordElements.length) {
+                // Aynı anda birkaç kelime birden belirerek akıcı bir dalga efekti oluştursun
+                for (let i = 0; i < 2 && currentIndex < wordElements.length; i++) {
+                    wordElements[currentIndex].classList.add('visible');
+                    currentIndex++;
+                }
+                setTimeout(animateHeart, 70); // Yavaş ve romantik geçiş hızı
+            }
+        }
+
+        window.onload = () => {
+            setTimeout(animateHeart, 400);
+        };
+    </script>
+
+</body>
+</html>
